@@ -167,9 +167,6 @@ void saveFile()
     }
 
     fclose(fp);
-//    char keyword[128];
-//    if(symbol == '#')
-//        while(symbol != ' ') ke
 }
 
 
@@ -188,19 +185,24 @@ void openFile(char* path)
 
     char* file_array = (char*) malloc(file_size);
 
-    fread(file_array, 1, file_size, fp);
+    if(file_array == 0) puts("fatal error");
+
+    fseek( fp , 0 , SEEK_SET );
+
+    int res = fread(file_array, 1, file_size, fp);
+    if(res != file_size) printf("2 fatal %d", res);
 
     int i;
     unsigned int word_count;
 
     for(i = 0; i < file_size; i++)
     {
-        if(file_array[i] == '\n' && file_array[i + 1] == '#')
+        if(file_array[i] == '#')
             word_count++;
     }
 
     dictionary = (Word*) realloc(dictionary, sizeof(Word) * (count + word_count));
-    //count += word_count;
+
 
     char s[1048576];
     int j = 0;
@@ -208,14 +210,15 @@ void openFile(char* path)
 
     for(i = 0; i < file_size; i++)
     {
+        if(file_array[i] == '\n')
+            continue;
 
         if(file_array[i] == '#')
-
         {
-
             count++;
             flag = 1;
             j = 0;
+            continue;
         }
 
         if(file_array[i - 1] == '\n' && file_array[i] != '#')
@@ -232,6 +235,7 @@ void openFile(char* path)
 
         if(flag == 0)
         {
+            dictionary[count - 1].mean = (char*) realloc(dictionary[count - 1].mean, j);
             dictionary[count - 1].mean[j++] = file_array[i];
         }
 
