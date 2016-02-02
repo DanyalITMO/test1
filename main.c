@@ -18,10 +18,11 @@ int count;
 void help(void)
 {
     puts("-----------");
-    puts("insert");
-    puts("erase");
-    puts("find");
-    puts("exit");
+    puts("view - watch all words");
+    puts("insert - insert the words at the end of the dictionary");
+    puts("erase - Remove words by its number");
+    puts("find - search interpretations");
+    puts("exit - exit and save the file");
     puts("-----------");
     puts("\n");
 }
@@ -35,19 +36,30 @@ byte_t control(char* command)
         return 0;
     }
 
-    if(!strcmp(command, "insert"))
+    if(!strcmp(command, "insert"))    
+    {
         insert();
+        return 1;
+    }
 
     if(!strcmp(command, "erase"))
+    {
         erase();
+        return 1;
+    }
 
     if(!strcmp(command, "find"))
+    {
         find();
+        return 1;
+    }
 
-    if(!strcmp(command, "v"))
+    if(!strcmp(command, "view"))
+    {
         viewAll();
+        return 1;
+    }
 
-    return 1;
 }
 
 void input(Word* word)
@@ -89,8 +101,8 @@ void input(Word* word)
 
     word->id = count; // input id
 
-
 }
+
 
 void output(Word* word) // view one ellement
 {
@@ -102,8 +114,22 @@ void find(void) //Search for a word in the dictionary
     int i;
 
     puts("what you need find?");
-    char s[100];
-    gets(s);
+    char s[1048576];//1 mb
+
+    while(1) //input keyword
+    {
+        puts("enter word. Max 128 symbols");
+        gets(s);
+
+        if(strlen(s) > 128)
+            puts("Error. line size > 128, try again\n");
+        else
+        {
+            break;
+        }
+
+    }
+
 
     for(i = 0; i < count; i++)
     {
@@ -123,18 +149,20 @@ void erase(void)
 
     for(i = 0; i < count; i++)
     {
-        if(dictionary[i].id == id)
+        if(dictionary[i].id == id)// if id coincided
         {
             for(j = i; j < count; j++)
             {
-                dictionary[j] = dictionary[j + 1];
+                dictionary[j] = dictionary[j + 1]; // lowe id all the following words on one
+
             }
 
-            dictionary = (Word*) realloc(dictionary, sizeof(Word) * (count - 1));
+            dictionary = (Word*) realloc(dictionary, sizeof(Word) * (count - 1)); // and realloc dictionary
             count--;
         }
     }
 }
+
 
 void insert(void)
 {
@@ -154,7 +182,7 @@ void viewAll(void)
 void saveFile()
 {
     FILE* fp;
-    if((fp = fopen("//home//danek//save.txt", "w")) == NULL)
+    if((fp = fopen("~//save.txt", "w")) == NULL)
         puts("could not open or creat this file");
 
     int i;
@@ -177,17 +205,24 @@ unsigned int fileSize(FILE* fp)
     return file_size;
 }
 
-char* writeFileInBuffer(FILE *fp, char* file_array)
+char* writeFileInBuffer(FILE *fp, char* file_array) //read file in file_array(heap)
 {
     unsigned int file_size = fileSize(fp);
 
     file_array = (char*) malloc(file_size);
 
-    if(file_array == 0) puts("bad allocate");
-
+    if(file_array == 0)
+    {
+        puts("bad allocate. Dictionary can not be connected");
+    }
 
     int res = fread(file_array, 1, file_size, fp);
-    if(res != file_size) printf("2 fatal %d", res);
+
+    if(res != file_size)
+    {
+        puts("Dictionary can not be read");
+        return;
+    }
 
     return file_array;
 }
@@ -220,10 +255,20 @@ void openFile(char* path)
 
     unsigned int file_size = fileSize(fp);
     char*  file_array = writeFileInBuffer(fp, file_array);
+
+    if(file_array == NULL)
+        return;
+
     unsigned int word_count = wordCounter(file_array, file_size);
 
 
     dictionary = (Word*) realloc(dictionary, sizeof(Word) * (count + word_count));
+
+    if(dictionary == NULL)
+    {
+        puts("bad allocate");
+        return;
+    }
 
 
     int i, j = 0;
@@ -253,14 +298,21 @@ void openFile(char* path)
 
         if(flag == 1)
         {
-            dictionary[count - 1].keyword[j + 1] = '\0';
+            dictionary[count - 1].keyword[j + 1] = '\0'; //end of the line is always ahead of the last symbol
             dictionary[count - 1].keyword[j++] = file_array[i];
         }
 
         if(flag == 0)
         {
             dictionary[count - 1].mean = (char*) realloc(dictionary[count - 1].mean, j + 2);
-            dictionary[count - 1].mean[j + 1] = '\0';
+
+            if(dictionary == NULL)
+            {
+                puts("bad allocate");
+                return;
+            }
+
+            dictionary[count - 1].mean[j + 1] = '\0';//end of the line is always ahead of the last symbol
             dictionary[count - 1].mean[j++] = file_array[i];
         }
 
@@ -281,9 +333,7 @@ int main(int argc, char *argv[])
     for(i = 1; i < argc; i++)
     {
         openFile(argv[i]);
-        printf("%s\n", argv[i]);
     }
-
 
  
     byte_t flag = 1;
