@@ -66,7 +66,6 @@ unsigned int wordCounter(char* file_array, unsigned int file_size)
     }
 
     return word_count;
-
 }
 
 void openFile(char* path)
@@ -82,13 +81,10 @@ void openFile(char* path)
     unsigned int file_size = fileSize(fp);
     char*  file_array = writeFileInBuffer(fp, file_array);
 
-
-
     if(file_array == NULL)
         return;
 
     unsigned int word_count = wordCounter(file_array, file_size);
-
 
     dictionary = (Word*) realloc(dictionary, sizeof(Word) * (count + word_count));
 
@@ -97,7 +93,6 @@ void openFile(char* path)
         puts("bad allocate");
         return;
     }
-
 
     int i, j = 0;
     byte_t flag;
@@ -144,10 +139,7 @@ void openFile(char* path)
             dictionary[count - 1].mean[j++] = file_array[i];
         }
 
-
-
     }
 
     fclose(fp);
-
 }

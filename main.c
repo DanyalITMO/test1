@@ -58,14 +58,16 @@ byte_t control(char* command)
 char* myGetline(char* string,unsigned int max_lenght)
 {
     char c;
-    string = (char*) malloc(1);
+    string = (char*) malloc(10);
     long long i;
 
     while(1)
     {
         for(i = 1; (c = getchar()) != '\n'; i++)//input string
         {
-            string = (char*) realloc(string, i);
+            if(i % 10 == 0)
+                string = (char*) realloc(string, (i + 1) * 10);
+
             string[i-1] = c;
         }
 
@@ -93,6 +95,7 @@ void input(Word* word)
 
     word->id = count - 1; // input id
 
+    free(buf);
 }
 
 
@@ -106,14 +109,15 @@ void find(void) //Search for a word in the dictionary
     int i;
 
     puts("what you need find? Max 128 character: ");
-    char *s = myGetline(s, MAX_LENGHT_WORD);//1 mb
+    char *buf = myGetline(buf, MAX_LENGHT_WORD);
 
     for(i = 0; i < count; i++)
     {
-        if(!strcmp(dictionary[i].keyword, s))
+        if(!strcmp(dictionary[i].keyword, buf))
             output(&dictionary[i]);
     }
 
+    free(buf);
 }
 
 void erase(void)
