@@ -8,9 +8,9 @@ void saveFile(void)
 {
     FILE* fp;
 
-    //if((fp = fopen("//home//danek//save.txt", "w")) == NULL)
+    if((fp = fopen("//home//danek//save.txt", "w")) == NULL)
 
-    if((fp = fopen("save.txt", "w")) == NULL)
+    //if((fp = fopen("save.txt", "w")) == NULL)
           puts("could not open or creat this file");
 
     int i;
@@ -82,6 +82,8 @@ void openFile(char* path)
     unsigned int file_size = fileSize(fp);
     char*  file_array = writeFileInBuffer(fp, file_array);
 
+
+
     if(file_array == NULL)
         return;
 
@@ -145,5 +147,7 @@ void openFile(char* path)
 
 
     }
+
+    fclose(fp);
 
 }

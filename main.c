@@ -7,7 +7,7 @@
 
 void help(void)
 {
-    puts("-----------");
+    puts("\n\n-----------");
     puts("view - watch all words");
     puts("insert - insert the words at the end of the dictionary");
     puts("erase - Remove words by its number");
@@ -23,6 +23,7 @@ byte_t control(char* command)
     if(!strcmp(command, "exit"))
     {
         saveFile();
+        free(dictionary);
         return 0;
     }
 
@@ -52,49 +53,50 @@ byte_t control(char* command)
 
 }
 
+
+
+char* myGetline(char* string,unsigned int max_lenght)
+{
+    char c;
+    string = (char*) malloc(1);
+    long long i;
+
+    while(1)
+    {
+        for(i = 1; (c = getchar()) != '\n'; i++)//input string
+        {
+            string = (char*) realloc(string, i);
+            string[i-1] = c;
+        }
+
+        if(max_lenght > 0 && strlen(string) > max_lenght)
+            puts("error. lenght > max\n. Try again");
+        else
+            break;
+    }
+
+    string = (char*) realloc(string, i); // input \0
+    string[i - 1] = '\0';
+
+    return string;
+
+}
+
 void input(Word* word)
 {
-    char s[1048576];//1 mb
+    puts("\nenter word. Max 128 character:");
+    char* buf = myGetline(buf, MAX_LENGHT_WORD);
+    strcpy(word->keyword, buf);
 
-    while(1) //input keyword
-    {
-        puts("enter word. Max 128 symbols");
-        gets(s);
+    puts("enter mean:");
+    word->mean = myGetline(word->mean, 0);
 
-        if(strlen(s) > 128)
-            puts("Error. line size > 128, try again\n");
-        else
-        {
-            strcpy(word->keyword, s);
-            break;
-        }
-
-    }
-
-    while(1) //input mean
-    {
-        puts("\n enter mean");
-        gets(s);
-        word->mean = (char*) realloc(word->mean, sizeof(s));
-
-        if(word->mean == NULL)
-        {
-           puts("allocate error. Try again");
-           return 1;
-        }
-        else
-        {
-            strcpy(word->mean, s);
-            break;
-        }
-    }
-
-    word->id = count; // input id
+    word->id = count - 1; // input id
 
 }
 
 
-void output(Word* word) // view one ellement
+void output(Word* word) // print one ellement
 {
     printf("%d)%s -%s\n",word->id, word->keyword, word->mean);
 }
@@ -103,23 +105,8 @@ void find(void) //Search for a word in the dictionary
 {
     int i;
 
-    puts("what you need find?");
-    char s[1048576];//1 mb
-
-    while(1) //input keyword
-    {
-        puts("enter word. Max 128 symbols");
-        gets(s);
-
-        if(strlen(s) > 128)
-            puts("Error. line size > 128, try again\n");
-        else
-        {
-            break;
-        }
-
-    }
-
+    puts("what you need find? Max 128 character: ");
+    char *s = myGetline(s, MAX_LENGHT_WORD);//1 mb
 
     for(i = 0; i < count; i++)
     {
@@ -171,6 +158,8 @@ void viewAll(void)
 
 
 
+
+
 int main(int argc, char *argv[])
 {
     dictionary = (Word*) realloc(dictionary, sizeof(Word));
@@ -186,11 +175,12 @@ int main(int argc, char *argv[])
  
     byte_t flag = 1;
    
-    char command[100];
+    char* command;
     while(flag)
      {
          help();
-         gets(command);
+
+         command = myGetline(command, 0);
          flag = control(command);
      }
     return 0;
