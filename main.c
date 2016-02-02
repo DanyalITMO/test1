@@ -87,17 +87,17 @@ void input(Word* word)
         }
     }
 
-    word->id = count;
+    word->id = count; // input id
 
 
 }
 
-void output(Word* word)
+void output(Word* word) // view one ellement
 {
     printf("%d)%s -%s\n",word->id, word->keyword, word->mean);
 }
 
-void find(void)
+void find(void) //Search for a word in the dictionary
 {
     int i;
 
@@ -118,8 +118,6 @@ void erase(void)
     int i, j;
 
     puts("what you need delete?. Enter id");
-//    char s[100];
-//    gets(s);
     int id;
     scanf("%d", &id);
 
@@ -137,6 +135,7 @@ void erase(void)
         }
     }
 }
+
 void insert(void)
 {
     count++;
@@ -169,6 +168,45 @@ void saveFile()
     fclose(fp);
 }
 
+unsigned int fileSize(FILE* fp)
+{
+    fseek(fp, 0, SEEK_END);
+    unsigned int file_size = ftell(fp);
+    fseek( fp , 0 , SEEK_SET );
+
+    return file_size;
+}
+
+char* writeFileInBuffer(FILE *fp, char* file_array)
+{
+    unsigned int file_size = fileSize(fp);
+
+    file_array = (char*) malloc(file_size);
+
+    if(file_array == 0) puts("bad allocate");
+
+
+    int res = fread(file_array, 1, file_size, fp);
+    if(res != file_size) printf("2 fatal %d", res);
+
+    return file_array;
+}
+
+unsigned int wordCounter(char* file_array, unsigned int file_size)
+{
+    int i;
+    unsigned int word_count = 0;
+
+    for(i = 0; i < file_size; i++)
+    {
+        if(file_array[i] == '#')
+            word_count++;
+    }
+
+    return word_count;
+
+}
+
 
 void openFile(char* path)
 {
@@ -180,32 +218,15 @@ void openFile(char* path)
         return;
     }
 
-    fseek(fp, 0, SEEK_END);
-    unsigned int file_size = ftell(fp);
+    unsigned int file_size = fileSize(fp);
+    char*  file_array = writeFileInBuffer(fp, file_array);
+    unsigned int word_count = wordCounter(file_array, file_size);
 
-    char* file_array = (char*) malloc(file_size);
-
-    if(file_array == 0) puts("fatal error");
-
-    fseek( fp , 0 , SEEK_SET );
-
-    int res = fread(file_array, 1, file_size, fp);
-    if(res != file_size) printf("2 fatal %d", res);
-
-    int i;
-    unsigned int word_count;
-
-    for(i = 0; i < file_size; i++)
-    {
-        if(file_array[i] == '#')
-            word_count++;
-    }
 
     dictionary = (Word*) realloc(dictionary, sizeof(Word) * (count + word_count));
 
 
-    char s[1048576];
-    int j = 0;
+    int i, j = 0;
     byte_t flag;
 
     for(i = 0; i < file_size; i++)
@@ -216,6 +237,8 @@ void openFile(char* path)
         if(file_array[i] == '#')
         {
             count++;
+            dictionary[count -1].id = count -1;
+
             flag = 1;
             j = 0;
             continue;
@@ -230,12 +253,14 @@ void openFile(char* path)
 
         if(flag == 1)
         {
+            dictionary[count - 1].keyword[j + 1] = '\0';
             dictionary[count - 1].keyword[j++] = file_array[i];
         }
 
         if(flag == 0)
         {
-            dictionary[count - 1].mean = (char*) realloc(dictionary[count - 1].mean, j);
+            dictionary[count - 1].mean = (char*) realloc(dictionary[count - 1].mean, j + 2);
+            dictionary[count - 1].mean[j + 1] = '\0';
             dictionary[count - 1].mean[j++] = file_array[i];
         }
 
@@ -248,6 +273,8 @@ void openFile(char* path)
 
 int main(int argc, char *argv[])
 {
+    dictionary = (Word*) realloc(dictionary, sizeof(Word));
+
     int i;
 
     if(argc != 1)
@@ -257,7 +284,7 @@ int main(int argc, char *argv[])
         printf("%s\n", argv[i]);
     }
 
-    dictionary = (Word*) realloc(dictionary, sizeof(Word));
+
  
     byte_t flag = 1;
    
